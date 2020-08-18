@@ -1,0 +1,6 @@
+include ':appNfcReader'
+include ':appNfcTag'
+include ':featureNfcReader'
+include ':featureNfcTag'
+include ':libraryNfc'
+rootProject.name = "NfcToBle"
