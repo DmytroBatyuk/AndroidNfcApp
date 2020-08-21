@@ -8,6 +8,7 @@ object NfcBridge {
 
     interface INfcClient{
         fun onApdu()
+        fun isApduSelectReady(): Boolean
         fun onCommand(recv: Entity): Command
     }
 }

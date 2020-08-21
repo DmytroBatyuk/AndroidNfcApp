@@ -17,7 +17,6 @@ private val TAG = HostApduServiceImpl::class.java.simpleName
  *  [NfcBridge.INfcClient] is [null] returning [NotReady] command
  */
 class HostApduServiceImpl : HostApduService() {
-
     override fun onCreate() {
         super.onCreate()
         Log.i(TAG, "service: created")
@@ -28,19 +27,22 @@ class HostApduServiceImpl : HostApduService() {
         Log.i(TAG, "service: destroyed")
     }
 
-    override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle?): ByteArray {
+    override fun processCommandApdu(commandApdu: ByteArray, extras: Bundle?): ByteArray? {
         val send = if (SelectApdu.let(Utils::toByteArray).contentEquals(commandApdu)) {
-            Log.i(
-                TAG,
-                "(${Thread.currentThread().name}) recv: apdu: ${Utils.byteArrayToHexString(
-                    commandApdu
-                )}"
-            )
+            Log.i(TAG, "recv: apdu: ${Utils.byteArrayToHexString(commandApdu)}")
             NfcBridge.client?.onApdu()
+            if (NfcBridge.client?.isApduSelectReady() != true) {
+                return null
+            }
             ApduSelectedOk
         } else if (null != NfcBridge.client) {
+
             commandApdu
                 .let(Utils::toEntity)
+                .let {
+                    Log.i(TAG, "recv: $it")
+                    it
+                }
                 .let(NfcBridge.client!!::onCommand)
         } else {
             NotReady(1)

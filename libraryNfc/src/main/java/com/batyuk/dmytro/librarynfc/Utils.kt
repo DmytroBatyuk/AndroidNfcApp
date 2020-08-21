@@ -13,13 +13,11 @@ object Utils {
 
     // "OK" status word sent in response to SELECT AID command (0x9000)
     val SELECT_APDU_OK = byteArrayOf(0x90.toByte(), 0x00.toByte())
-    val RESPONSE_DATA_NOT_READY: Byte = 0x00
-    val RESPONSE_DATA_OK: Byte = 0x01
-    val RESPONSE_EXCHANGE_COMPLETE: Byte = 0x02
 
-    val COMMAND_DATA: Byte = 0x00
-    val COMMAND_NOT_READY: Byte = 0x01
-    val COMMAND_EXCHANGE_COMPLETED: Byte = 0x02
+    val COMMAND_TEXT: Byte = 0x00
+    val COMMAND_DATA: Byte = 0x01
+    val COMMAND_NOT_READY: Byte = 0x02
+    val COMMAND_EXCHANGE_COMPLETED: Byte = 0x03
     val COMMAND_UNKNOWN = 0xFF.toByte()
 
     /**
@@ -41,7 +39,8 @@ object Utils {
 
     fun toEntity(bytes: ByteArray): Entity {
         return when (bytes.firstOrNull()) {
-            COMMAND_DATA -> Data(String(bytes.copyOfRange(1, bytes.size), Charset.forName("UTF-8")))
+            COMMAND_TEXT -> Text(String(bytes.copyOfRange(1, bytes.size), Charset.forName("UTF-8")))
+            COMMAND_DATA -> Data(bytes[1], bytes.copyOfRange(2, bytes.size))
             COMMAND_NOT_READY -> NotReady(bytes.getOrNull(1)?.toLong() ?: 0)
             COMMAND_EXCHANGE_COMPLETED -> ExchangeCompleted
             COMMAND_UNKNOWN -> Unknown
@@ -74,7 +73,8 @@ object Utils {
         return when (command) {
             is SelectApdu -> buildSelectApdu()
             is ApduSelectedOk -> SELECT_APDU_OK
-            is Data -> byteArrayOf(COMMAND_DATA, *command.text.toByteArray())
+            is Text -> byteArrayOf(COMMAND_TEXT, *command.text.toByteArray())
+            is Data -> byteArrayOf(COMMAND_DATA, command.code, *command.payload)
             is NotReady -> byteArrayOf(COMMAND_NOT_READY, command.delaySeconds.toByte())
             ExchangeCompleted -> byteArrayOf(COMMAND_EXCHANGE_COMPLETED)
             Unknown -> byteArrayOf(COMMAND_UNKNOWN)

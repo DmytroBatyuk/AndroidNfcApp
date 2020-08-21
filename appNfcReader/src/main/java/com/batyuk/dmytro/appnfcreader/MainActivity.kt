@@ -11,7 +11,6 @@ import com.batyuk.dmytro.nfcreader.NfcBridge
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import java.lang.UnsupportedOperationException
 import java.util.concurrent.TimeUnit
 
 private val TAG = MainActivity::class.simpleName
@@ -52,7 +51,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
     private fun testDataExchange(tag: ITag) {
         Observable.fromCallable {
-            val send = Data("Test message")
+            val send = Text("Test message")
             try {
                 do {
                     Log.i(TAG, "send: $send")
@@ -68,7 +67,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
                         tag.disconnect()
                     }
 
-                } while (recv is Data)
+                } while (recv is Text)
             } catch (tle: TagLostException) {
                 Log.e(TAG, "tag has been lost")
             }

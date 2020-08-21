@@ -23,6 +23,9 @@ class App: Application() {
         override fun onApdu() {
             testPrepareData()
         }
+
+        override fun isApduSelectReady(): Boolean = true
+
         override fun onCommand(recv: Entity): Command {
             return testDataExchange(recv)
         }
@@ -30,10 +33,6 @@ class App: Application() {
 
     override fun onCreate() {
         super.onCreate()
-
-
-
-
         NfcBridge.client = client
     }
 
@@ -67,17 +66,18 @@ class App: Application() {
     private fun testDataExchange(recv: Entity): Command {
         Log.i(TAG, "recv: $recv")
         val send = when (recv) {
+            is Text,
             is Data -> {
                 if (isExchangeCompleted.get()) {
                     ExchangeCompleted
                 } else if (!isDataReady.get()) {
                     NotReady(1)
                 } else {
-                    Data("from tag")
+                    Text("from tag")
                 }
             }
             is NotReady -> {
-                Data("Waiting...")
+                Text("Waiting...")
             }
             ExchangeCompleted -> {
                 Unknown
